@@ -23,6 +23,8 @@ cvars.AddChangeCallback("zs_outnumberedhealthbonus", function(cvar, oldvalue, ne
 	GAMEMODE.OutnumberedHealthBonus = tonumber(newvalue) or 0
 end)
 
+-- Might get used later --
+
 GM.PantsMode = CreateConVar("zs_pantsmode", "0", FCVAR_ARCHIVE + FCVAR_NOTIFY, "Only the dead can know peace from this evil."):GetBool()
 cvars.AddChangeCallback("zs_pantsmode", function(cvar, oldvalue, newvalue)
 	GAMEMODE:SetPantsMode(tonumber(newvalue) == 1)
@@ -38,6 +40,8 @@ cvars.AddChangeCallback("zs_babymode", function(cvar, oldvalue, newvalue)
 	GAMEMODE:SetBabyMode(tonumber(newvalue) == 1)
 end)
 
+--------------------------------------------------------------------
+
 GM.EndWaveHealthBonus = CreateConVar("zs_endwavehealthbonus", "0", FCVAR_ARCHIVE + FCVAR_NOTIFY, "Humans will get this much health after every wave. 0 to disable."):GetInt()
 cvars.AddChangeCallback("zs_endwavehealthbonus", function(cvar, oldvalue, newvalue)
 	GAMEMODE.EndWaveHealthBonus = tonumber(newvalue) or 0
@@ -46,31 +50,6 @@ end)
 GM.GibLifeTime = CreateConVar("zs_giblifetime", "25", FCVAR_ARCHIVE, "Specifies how many seconds player gibs will stay in the world if not eaten or destroyed."):GetFloat()
 cvars.AddChangeCallback("zs_giblifetime", function(cvar, oldvalue, newvalue)
 	GAMEMODE.GibLifeTime = tonumber(newvalue) or 1
-end)
-
-GM.GriefForgiveness = math.ceil(100 * CreateConVar("zs_grief_forgiveness", "0.5", FCVAR_ARCHIVE + FCVAR_NOTIFY, "Scales the damage given to griefable objects by this amount. Does not actually prevent damage, it only decides how much of a penalty to give the player. Use smaller values for more forgiving, larger for less forgiving."):GetFloat()) * 0.01
-cvars.AddChangeCallback("zs_grief_forgiveness", function(cvar, oldvalue, newvalue)
-	GAMEMODE.GriefForgiveness = math.ceil(100 * (tonumber(newvalue) or 1)) * 0.01
-end)
-
-GM.GriefStrict = CreateConVar("zs_grief_strict", "1", FCVAR_ARCHIVE + FCVAR_NOTIFY, "Anti-griefing system. Gives points and eventually health penalties to humans who destroy friendly barricades."):GetBool()
-cvars.AddChangeCallback("zs_grief_strict", function(cvar, oldvalue, newvalue)
-	GAMEMODE.GriefStrict = tonumber(newvalue) == 1
-end)
-
-GM.GriefMinimumHealth = CreateConVar("zs_grief_minimumhealth", "100", FCVAR_ARCHIVE + FCVAR_NOTIFY, "The minimum health for an object to be considered griefable."):GetInt()
-cvars.AddChangeCallback("zs_grief_minimumhealth", function(cvar, oldvalue, newvalue)
-	GAMEMODE.GriefMinimumHealth = tonumber(newvalue) or 100
-end)
-
-GM.GriefDamageMultiplier = math.ceil(100 * CreateConVar("zs_grief_damagemultiplier", "0.5", FCVAR_ARCHIVE + FCVAR_NOTIFY, "Multiplies damage done to griefable objects from humans by this amount."):GetFloat()) * 0.01
-cvars.AddChangeCallback("zs_grief_damagemultiplier", function(cvar, oldvalue, newvalue)
-	GAMEMODE.GriefDamageMultiplier = math.ceil(100 * (tonumber(newvalue) or 0.5)) * 0.01
-end)
-
-GM.GriefReflectThreshold = CreateConVar("zs_grief_reflectthreshold", "-5", FCVAR_ARCHIVE + FCVAR_NOTIFY, "Start giving damage if the player has less than this many points."):GetInt()
-cvars.AddChangeCallback("zs_grief_reflectthreshold", function(cvar, oldvalue, newvalue)
-	GAMEMODE.GriefReflectThreshold = tonumber(newvalue) or -5
 end)
 
 GM.MaxPropsInBarricade = CreateConVar("zs_maxpropsinbarricade", "8", FCVAR_ARCHIVE + FCVAR_NOTIFY, "Limits the amount of props that can be in one 'contraption' of nails."):GetInt()
