@@ -232,29 +232,7 @@ function meta:HumanNearby()
 end
 
 function meta:ResetLastBarricadeAttacker(attacker, dmginfo)
-	if attacker:IsPlayer() and attacker:Team() == TEAM_UNDEAD then
-		self.m_LastDamagedByZombie = CurTime()
 
-		if self:HumanNearby() then
-			local dmg = math.ceil(dmginfo:GetDamage())
-			attacker.BarricadeDamage = attacker.BarricadeDamage + dmg
-			if attacker.LifeBarricadeDamage ~= nil then
-				attacker:AddLifeBarricadeDamage(dmg)
-			end
-			if attacker:GetZombieClassTable().Name == "Crow" then
-				attacker.CrowBarricadeDamage = attacker.CrowBarricadeDamage + dmg
-			end
-		end
-	end
-end
-
-meta.OldSetPhysicsAttacker = meta.SetPhysicsAttacker
-function meta:SetPhysicsAttacker(ent)
-	if string.sub(self:GetClass(), 1, 12) == "func_physbox" and ent:IsValid() then
-		self.PBAttacker = ent
-		self.NPBAttacker = CurTime() + 1
-	end
-	self:OldSetPhysicsAttacker(ent)
 end
 
 local function randomsort(a, b)
