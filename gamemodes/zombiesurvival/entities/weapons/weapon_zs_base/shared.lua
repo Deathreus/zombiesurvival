@@ -14,7 +14,8 @@ SWEP.Primary.ClipSize = 8
 SWEP.Primary.DefaultClip = 0
 SWEP.Primary.Automatic = false
 SWEP.Primary.Ammo = "pistol"
-SWEP.RequiredClip = 1
+
+SWEP.RequiredClip = CreateConVar("zs_ammoconsumption", "1", FCVAR_CHEAT, "Disable ammo consumption"):GetInt()
 
 SWEP.Secondary.ClipSize = 1
 SWEP.Secondary.DefaultClip = 1
@@ -42,6 +43,11 @@ function SWEP:Initialize()
 		self.ConeMax = self.ConeMoving
 		self.ConeRamp = 2
 	end
+
+	self.RequiredClip = GetConVar("zs_ammoconsumption"):GetInt()
+	cvars.AddChangeCallback("zs_ammoconsumption", function(cvar, oldvalue, newvalue)
+		self.RequiredClip = tonumber(newvalue) or 1
+	end)
 
 	if CLIENT then
 		self:CheckCustomIronSights()

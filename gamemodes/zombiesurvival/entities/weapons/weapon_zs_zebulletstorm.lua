@@ -55,8 +55,8 @@ end
 
 function SWEP:TakeAmmo()
 	if self:GetIronsights() then
-		self:TakePrimaryAmmo(2)
+		self:TakePrimaryAmmo(self.RequiredClip * 2)
 	else
-		self:TakePrimaryAmmo(1)
+		self:TakePrimaryAmmo(self.RequiredClip)
 	end
 end
