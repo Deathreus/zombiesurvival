@@ -20,20 +20,22 @@ GM.Credits = {
 	{"Kradar", "", "Italian translation"},
 	{"Raptor", "", "German translation"},
 	{"The Special Duckling", "", "Danish translation"},
-	{"Box, ptown, Dr. Broly", "", "Spanish translation"}
+	{"Box, ptown, Dr. Broly", "", "Spanish translation"},
+
+	{"Deathreus", "", "Singleplayer Rewrite"}
 }
 
 include("nixthelag.lua")
 include("buffthefps.lua")
 
 function GM:GetNumberOfWaves()
-	local default = GetGlobalBool("classicmode") and 10 or self.NumberOfWaves
+	local default = GetGlobalBool("classicmode") and 10 or 1
 	local num = GetGlobalInt("numwaves", default) -- This is controlled by logic_waves.
 	return num == -2 and default or num
 end
 
 function GM:GetWaveOneLength()
-	return GetGlobalBool("classicmode") and self.WaveOneLengthClassic or self.WaveOneLength
+	return GetGlobalBool("classicmode") and 120 or 220
 end
 
 include("sh_translate.lua")
@@ -49,8 +51,6 @@ include("sh_animations.lua")
 include("sh_sigils.lua")
 include("sh_channel.lua")
 
-include("noxapi/noxapi.lua")
-
 include("obj_vector_extend.lua")
 include("obj_entity_extend.lua")
 include("obj_player_extend.lua")
@@ -62,9 +62,7 @@ include("workshopfix.lua")
 
 GM.EndRound = false
 GM.StartingWorth = 100
-GM.ZombieVolunteers = {}
 
-team.SetUp(TEAM_ZOMBIE, "The Undead", Color(0, 255, 0, 255))
 team.SetUp(TEAM_SURVIVORS, "Survivors", Color(0, 160, 255, 255))
 
 local validmodels = player_manager.AllValidModels()
@@ -157,44 +155,6 @@ function GM:ShouldRestartRound()
 	return true
 end
 
-function GM:ZombieSpawnDistanceSort(other)
-	return self._ZombieSpawnDistance < other._ZombieSpawnDistance
-end
-
-function GM:SortZombieSpawnDistances(allplayers)
-	local curtime = CurTime()
-
-	local zspawns = ents.FindByClass("zombiegasses")
-	if #zspawns == 0 then
-		zspawns = team.GetValidSpawnPoint(TEAM_UNDEAD)
-	end
-
-	for _, pl in pairs(allplayers) do
-		if pl:Team() == TEAM_UNDEAD or pl:GetInfo("zs_alwaysvolunteer") == "1" then
-			pl._ZombieSpawnDistance = -1
-		elseif CLIENT or pl.LastNotAFK and CurTime() <= pl.LastNotAFK + 60 then
-			local plpos = pl:GetPos()
-			local closest = 9999999
-			for _, ent in pairs(zspawns) do
-				local dist = ent:GetPos():Distance(plpos)
-				if dist < closest then
-					closest = dist
-				end
-			end
-			pl._ZombieSpawnDistance = closest
-		else
-			pl._ZombieSpawnDistance = 9999999
-		end
-	end
-
-	table.sort(allplayers, self.ZombieSpawnDistanceSort)
-end
-
-function GM:SetDynamicSpawning(onoff)
-	SetGlobalBool("DynamicSpawningDisabled", not onoff)
-	self.DynamicSpawning = onoff
-end
-
 function GM:ValidMenuLockOnTarget(pl, ent)
 	if ent and ent:IsValid() and ent:IsPlayer() and ent:Team() == TEAM_HUMAN and ent:Alive() then
 		local startpos = pl:EyePos()
@@ -209,137 +169,6 @@ end
 
 function GM:GetHandsModel(pl)
 	return player_manager.TranslatePlayerHands(pl:GetInfo("cl_playermodel"))
-end
-
-local playerheight = Vector(0, 0, 72)
-local playermins = Vector(-17, -17, 0)
-local playermaxs = Vector(17, 17, 4)
-local SkewedDistance = util.SkewedDistance
-
-GM.DynamicSpawnDistVisOld = 2048
-GM.DynamicSpawnDistOld = 640
-function GM:DynamicSpawnIsValidOld(zombie, humans, allplayers)
-	-- I didn't make this check where trigger_hurt entities are. Rather I made it check the time since the last time you were hit with a trigger_hurt.
-	-- I'm not sure if it's possible to check if a trigger_hurt is enabled or disabled through the Lua bindings.
-	if SERVER and zombie.LastHitWithTriggerHurt and CurTime() < zombie.LastHitWithTriggerHurt + 2 then
-		return false
-	end
-
-	-- Optional caching for these.
-	if not humans then humans = team.GetPlayers(TEAM_HUMAN) end
-	if not allplayers then allplayers = player.GetAll() end
-
-	local pos = zombie:GetPos() + Vector(0, 0, 1)
-	if zombie:Alive() and zombie:GetMoveType() == MOVETYPE_WALK and zombie:OnGround()
-	and not util.TraceHull({start = pos, endpos = pos + playerheight, mins = playermins, maxs = playermaxs, mask = MASK_SOLID, filter = allplayers}).Hit then
-		local vtr = util.TraceHull({start = pos, endpos = pos - playerheight, mins = playermins, maxs = playermaxs, mask = MASK_SOLID_BRUSHONLY})
-		if not vtr.HitSky and not vtr.HitNoDraw then
-			local valid = true
-
-			for _, human in pairs(humans) do
-				local hpos = human:GetPos()
-				local nearest = zombie:NearestPoint(hpos)
-				local dist = SkewedDistance(hpos, nearest, 2.75) -- We make it so that the Z distance between a human and a zombie is skewed if the zombie is below the human.
-				if dist <= self.DynamicSpawnDistOld or dist <= self.DynamicSpawnDistVisOld and WorldVisible(hpos, nearest) then -- Zombies can't be in radius of any humans. Zombies can't be clearly visible by any humans.
-					valid = false
-					break
-				end
-			end
-
-			return valid
-		end
-	end
-
-	return false
-end
-
-function GM:GetBestDynamicSpawnOld(pl, pos)
-	local spawns = self:GetDynamicSpawnsOld(pl)
-	if #spawns == 0 then return end
-
-	return self:GetClosestSpawnPoint(spawns, pos or self:GetTeamEpicentre(TEAM_HUMAN)) or table.Random(spawns)
-end
-
-function GM:GetDynamicSpawnsOld(pl)
-	local tab = {}
-
-	local allplayers = player.GetAll()
-	local humans = team.GetPlayers(TEAM_HUMAN)
-	for _, zombie in pairs(team.GetPlayers(TEAM_UNDEAD)) do
-		if zombie ~= pl and self:DynamicSpawnIsValidOld(zombie, humans, allplayers) then
-			table.insert(tab, zombie)
-		end
-	end
-
-	return tab
-end
-
-GM.DynamicSpawnDist = 400
-GM.DynamicSpawnDistBuild = 650
-function GM:DynamicSpawnIsValid(nest, humans, allplayers)
-	if self:ShouldUseAlternateDynamicSpawn() then
-		return self:DynamicSpawnIsValidOld(nest, humans, allplayers)
-	end
-
-	-- Optional caching for these.
-	if not humans then humans = team.GetPlayers(TEAM_HUMAN) end
-	--if not allplayers then allplayers = player.GetAll() end
-
-	local pos = nest:GetPos() + Vector(0, 0, 1)
-	if nest.GetNestBuilt and nest:GetNestBuilt() and not util.TraceHull({start = pos, endpos = pos + playerheight, mins = playermins, maxs = playermaxs, mask = MASK_SOLID_BRUSHONLY}).Hit then
-		local vtr = util.TraceHull({start = pos, endpos = pos - playerheight, mins = playermins, maxs = playermaxs, mask = MASK_SOLID_BRUSHONLY})
-		if not vtr.HitSky and not vtr.HitNoDraw then
-			local valid = true
-			local nearest = nest:GetPos()
-
-			for _, human in pairs(humans) do
-				local hpos = human:GetPos()
-				local dist = SkewedDistance(hpos, nearest, 2.75) -- We make it so that the Z distance between a human and a nest is skewed if the nest is below the human.
-				if dist <= self.DynamicSpawnDist then
-					valid = false
-					break
-				end
-			end
-
-			return valid
-		end
-	end
-
-	return false
-end
-
-function GM:GetBestDynamicSpawn(pl, pos)
-	if self:ShouldUseAlternateDynamicSpawn() then
-		return self:GetBestDynamicSpawnOld(pl, pos)
-	end
-
-	local spawns = self:GetDynamicSpawns(pl)
-	if #spawns == 0 then return end
-
-	return self:GetClosestSpawnPoint(spawns, pos or self:GetTeamEpicentre(TEAM_HUMAN)) or table.Random(spawns)
-end
-
-function GM:GetDynamicSpawns(pl)
-	if self:ShouldUseAlternateDynamicSpawn() then
-		return self:GetDynamicSpawnsOld(pl)
-	end
-
-	local tab = {}
-
-	--local allplayers = player.GetAll()
-	local humans = team.GetPlayers(TEAM_HUMAN)
-	for _, nest in pairs(ents.FindByClass("prop_creepernest")) do
-		if self:DynamicSpawnIsValid(nest, humans--[[, allplayers]]) then
-			table.insert(tab, nest)
-		end
-	end
-
-	return tab
-end
-
-function GM:GetDesiredStartingZombies()
-	local numplayers = #player.GetAll()
-	return math.min(math.max(1, math.ceil(numplayers * self.WaveOneZombies)), numplayers - 1)
 end
 
 function GM:GetEndRound()
@@ -375,8 +204,6 @@ function GM:Move(pl, move)
 			move:SetMaxSpeed(move:GetMaxSpeed() * 0.85)
 			move:SetMaxClientSpeed(move:GetMaxClientSpeed() * 0.85)
 		end
-	elseif pl:CallZombieFunction("Move", move) then
-		return
 	end
 
 	local legdamage = pl:GetLegDamage()
@@ -390,23 +217,15 @@ end
 function GM:OnPlayerHitGround(pl, inwater, hitfloater, speed)
 	if inwater then return true end
 
-	local isundead = pl:Team() == TEAM_UNDEAD
-
-	if isundead then
-		if pl:GetZombieClassTable().NoFallDamage then return true end
-	elseif SERVER then
+	if SERVER then
 		pl:PreventSkyCade()
-	end
-
-	if isundead then
-		speed = math.max(0, speed - 200)
 	end
 
 	local damage = (0.1 * (speed - 525)) ^ 1.45
 	if hitfloater then damage = damage / 2 end
 
 	if math.floor(damage) > 0 then
-		if damage >= 5 and (not isundead or not pl:GetZombieClassTable().NoFallSlowdown) then
+		if damage >= 5  then
 			pl:RawCapLegDamage(CurTime() + math.min(2, damage * 0.038))
 		end
 
@@ -415,7 +234,7 @@ function GM:OnPlayerHitGround(pl, inwater, hitfloater, speed)
 				pl:KnockDown(damage * 0.05)
 			end
 			pl:TakeSpecialDamage(damage, DMG_FALL, game.GetWorld(), game.GetWorld(), pl:GetPos())
-			pl:EmitSound("player/pl_fallpain"..(math.random(2) == 1 and 3 or 1)..".wav")
+			pl:EmitSound("player/pl_fallpain" .. (math.random(2) == 1 and 3 or 1) .. ".wav")
 		end
 	end
 
@@ -450,18 +269,20 @@ function GM:ScalePlayerDamage(pl, hitgroup, dmginfo)
 		pl.m_LastHeadShot = CurTime()
 	end
 
-	if not pl:CallZombieFunction("ScalePlayerDamage", hitgroup, dmginfo) then
-		if hitgroup == HITGROUP_HEAD then
-			dmginfo:SetDamage(dmginfo:GetDamage() * 2)
-		elseif hitgroup == HITGROUP_LEFTLEG or hitgroup == HITGROUP_RIGHTLEG or hitgroup == HITGROUP_GEAR then
-			dmginfo:SetDamage(dmginfo:GetDamage() * 0.25)
-		elseif hitgroup == HITGROUP_STOMACH or hitgroup == HITGROUP_LEFTARM or hitgroup == HITGROUP_RIGHTARM then
-			dmginfo:SetDamage(dmginfo:GetDamage() * 0.75)
-		end
-	end
-
 	if SERVER and (hitgroup == HITGROUP_LEFTLEG or hitgroup == HITGROUP_RIGHTLEG) and self:PlayerShouldTakeDamage(pl, dmginfo:GetAttacker()) then
 		pl:AddLegDamage(dmginfo:GetDamage())
+	end
+end
+
+function GM:ScaleNPCDamage(npc, hitgroup, dmginfo)
+	if not self:CallZombieFunction("ScalePlayerDamage", npc, hitgroup, dmginfo) then
+		if hitgroup == HITGROUP_HEAD then
+			dmginfo:ScaleDamage(2)
+		elseif hitgroup == HITGROUP_LEFTLEG or hitgroup == HITGROUP_RIGHTLEG or hitgroup == HITGROUP_GEAR then
+			dmginfo:ScaleDamage(0.25)
+		elseif hitgroup == HITGROUP_STOMACH or hitgroup == HITGROUP_LEFTARM or hitgroup == HITGROUP_RIGHTARM then
+			dmginfo:ScaleDamage(0.75)
+		end
 	end
 end
 
@@ -492,16 +313,6 @@ function GM:FindUseEntity(pl, ent)
 	end
 
 	return ent
-end
-
-function GM:ShouldUseAlternateDynamicSpawn()
-	return self.ZombieEscape or self:IsClassicMode() or self.PantsMode or self:IsBabyMode()
-end
-
-function GM:GetZombieDamageScale(pos, ignore)
-	if LASTHUMAN then return self.ZombieDamageMultiplier end
-
-	return self.ZombieDamageMultiplier * (1 - self:GetDamageResistance(self:GetFearMeterPower(pos, TEAM_UNDEAD, ignore)))
 end
 
 local temppos
@@ -717,7 +528,7 @@ end
 
 if GM:GetWave() == 0 then
 	GM:SetWaveStart(GM.WaveZeroLength)
-	GM:SetWaveEnd(GM.WaveZeroLength + GM:GetWaveOneLength())
+	GM:SetWaveEnd(GM.WaveZeroLength + GM.TimeLimit)
 end
 
 function GM:GetWaveActive()
