@@ -430,26 +430,6 @@ function meta:UnSpectateAndSpawn()
 	self:Spawn()
 end
 
-function meta:SecondWind(pl)
-	if self.Gibbed or self:Alive() or self:Team() ~= TEAM_UNDEAD then return end
-
-	local pos = self:GetPos()
-	local angles = self:EyeAngles()
-	local lastattacker = self:GetLastAttacker()
-	local dclass = self.DeathClass
-	self.DeathClass = nil
-	self.Revived = true
-	self:UnSpectateAndSpawn()
-	self.Revived = nil
-	self.DeathClass = dclass
-	self:SetLastAttacker(lastattacker)
-	self:SetPos(pos)
-	self:SetHealth(self:Health() * 0.2)
-	self:SetEyeAngles(angles)
-
-	self:CallZombieFunction("OnSecondWind")
-end
-
 function meta:DropAll()
 	self:DropAllAmmo()
 	self:DropAllWeapons()
@@ -770,19 +750,6 @@ function meta:CheckRedeem(instant)
 	end
 end
 
-function meta:AntiGrief(dmginfo, overridenostrict)
-	if GAMEMODE.GriefStrict and not overridenostrict then
-		dmginfo:SetDamage(0)
-		dmginfo:ScaleDamage(0)
-		return
-	end
-
-	dmginfo:SetDamage(dmginfo:GetDamage() * GAMEMODE.GriefForgiveness)
-
-	self:GivePenalty(math.ceil(dmginfo:GetDamage() * 0.5))
-	self:ReflectDamage(dmginfo:GetDamage())
-end
-
 function meta:GivePenalty(amount)
 	self.m_PenaltyCarry = (self.m_PenaltyCarry or 0) + amount * 0.1
 	local frags = math.floor(self.m_PenaltyCarry)
@@ -880,7 +847,6 @@ function meta:GetLastAttacker()
 	if ent and ent:IsValid() and CurTime() <= self.LastAttacked + 10 then
 		return ent
 	end
-	--self:SetLastAttacker()
 end
 
 function meta:SetLastAttacker(ent)
@@ -899,5 +865,38 @@ meta.OldUnSpectate = meta.UnSpectate
 function meta:UnSpectate()
 	if self:GetObserverMode() ~= OBS_MODE_NONE then
 		self:OldUnSpectate(obsm)
+	end
+end
+
+AccessorFunc(meta, "Stress", "Stress", FORCE_NUMBER)
+
+function meta:UpdateStress(deltaT)
+	if CurTime() > (self.InhibitDecayDuration or 0) then
+		self:SetStress(math.min(self:GetStress() - (deltaT / GAMEMODE.IntensityDecayTime), 0.0))
+	end
+end
+
+function meta:IncreaseStress(stressType)
+	local value = 0.0
+	if stressType == STRESS_MILD then
+		value = 0.05
+	elseif stressType == STRESS_MODERATE then
+		value = 0.2
+	elseif stressType == STRESS_HIGH then
+		value = 0.55
+	elseif stressType == STRESS_EXTREME then
+		value = 0.9
+	elseif stressType == STRESS_MAXIMUM then
+		value = 999
+	end
+
+	self:SetStress(math.max(self:GetStress() + (value * GAMEMODE.IntensityScale), 1.0))
+
+	self:InhibitStressDecay(GAMEMODE.InhibitIntensityDelay)
+end
+
+function meta:InhibitStressDecay(duration)
+	if (self.InhibitDecayDuration or 0) - CurTime() < duration then
+		self.InhibitDecayDuration = CurTime() + duration
 	end
 end
