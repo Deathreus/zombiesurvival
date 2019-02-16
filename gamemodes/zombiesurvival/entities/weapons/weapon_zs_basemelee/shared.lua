@@ -211,7 +211,7 @@ function SWEP:MeleeSwing()
 					end
 				end
 
-				if hitent:IsPlayer() then
+				if hitent:IsPlayer() or hitent:IsNPC() then
 					hitent:TakeDamageInfo(dmginfo)
 				else
 					-- Again, no way to do prediction.
