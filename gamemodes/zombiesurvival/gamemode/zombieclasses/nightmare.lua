@@ -1,0 +1,11 @@
+NPC.Class = "npc_zs_boss"
+NPC.Name = translate.Get("class_nightmare")
+NPC.Health = 2000
+NPC.Speed = 140
+NPC.Model = Model("models/player/skeleton.mdl")
+NPC.NumSkins = 0
+NPC.Points = 30
+NPC.Unlocked = true
+NPC.Wave = 0
+NPC.BossZombie = true
+NPC.BossType = 1
