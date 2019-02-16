@@ -1,10 +1,13 @@
-TEAM_ZOMBIE = 3
-TEAM_ZOMBIES = TEAM_ZOMBIE
-TEAM_UNDEAD = TEAM_ZOMBIE
 TEAM_SURVIVOR = 4
 TEAM_SURVIVORS = TEAM_SURVIVOR
 TEAM_HUMAN = TEAM_SURVIVOR
 TEAM_HUMANS = TEAM_SURVIVOR
+
+---- Keeping these definitions for backcompat
+TEAM_ZOMBIE = 3
+TEAM_ZOMBIES = TEAM_ZOMBIE
+TEAM_UNDEAD = TEAM_ZOMBIE
+----
 
 DISMEMBER_HEAD = 1
 DISMEMBER_LEFTARM = 2
@@ -100,14 +103,14 @@ GM.BarricadeHealthVolumeFactor = 4
 GM.BossZombiePlayersRequired = 16
 
 GM.HumanGibs = {
-Model("models/gibs/HGIBS.mdl"),
-Model("models/gibs/HGIBS_spine.mdl"),
+	Model("models/gibs/HGIBS.mdl"),
+	Model("models/gibs/HGIBS_spine.mdl"),
 
-Model("models/gibs/HGIBS_rib.mdl"),
-Model("models/gibs/HGIBS_scapula.mdl"),
-Model("models/gibs/antlion_gib_medium_2.mdl"),
-Model("models/gibs/Antlion_gib_Large_1.mdl"),
-Model("models/gibs/Strider_Gib4.mdl")
+	Model("models/gibs/HGIBS_rib.mdl"),
+	Model("models/gibs/HGIBS_scapula.mdl"),
+	Model("models/gibs/antlion_gib_medium_2.mdl"),
+	Model("models/gibs/Antlion_gib_Large_1.mdl"),
+	Model("models/gibs/Strider_Gib4.mdl")
 }
 
 GM.BannedProps = {
@@ -170,42 +173,9 @@ GM.AmmoModels["spotlamp"] = "models/props_combine/combine_light001a.mdl"
 GM.AmmoModels["stone"] = "models/props_junk/rock001a.mdl"
 GM.AmmoModels["pulse"] = "models/Items/combine_rifle_ammo01.mdl"
 
--- Handled in languages file.
-GM.ValidBeaconMessages = {
-	"message_beacon_1",
-	"message_beacon_2",
-	"message_beacon_3",
-	"message_beacon_4",
-	"message_beacon_5",
-	"message_beacon_6",
-	"message_beacon_7",
-	--"message_beacon_8",
-	"message_beacon_9",
-	"message_beacon_10",
-	"message_beacon_11",
-	"message_beacon_12",
-	"message_beacon_13",
-	"message_beacon_14",
-	"message_beacon_15",
-	"message_beacon_16",
-	"message_beacon_17",
-	"message_beacon_18",
-	"message_beacon_19",
-	"message_beacon_20",
-	"message_beacon_21",
-	"message_beacon_22",
-	"message_beacon_23",
-	"message_beacon_24",
-	"message_beacon_25"
-}
-
-GM.FanList = {
-	"1418945843",
-	"1595085577",
-	"3311458935",
-	"3023059541",
-	"2000875318",
-	"778584317",
-	"6086255",
-	"2867054481"
-}
+STRESS_NONE 		= 0
+STRESS_MILD 		= 1
+STRESS_MODERATE 	= 2
+STRESS_HIGH 		= 3
+STRESS_EXTREME 		= 4
+STRESS_MAXIMUM		= 5
