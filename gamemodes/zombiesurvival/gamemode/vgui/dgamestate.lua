@@ -53,27 +53,18 @@ function PANEL:PerformLayout()
 end
 
 function PANEL:Text1Paint()
-	local text
-	local override = MySelf:IsValid() and GetGlobalString("hudoverride"..MySelf:Team(), "")
+	local text = ""
+	local override = MySelf:IsValid() and GetGlobalString("hudoverride" .. MySelf:Team(), "")
 
 	if override and #override > 0 then
 		text = override
 	else
-		local wave = GAMEMODE:GetWave()
-		if GAMEMODE:IsEscapeSequence() then
-			text = translate.Get(MySelf:IsValid() and MySelf:Team() == TEAM_UNDEAD and "prop_obj_exit_z" or "prop_obj_exit_h")
-		elseif wave <= 0 then
+		if GAMEMODE:GetWave() <= 0 then
 			text = translate.Get("prepare_yourself")
 		elseif GAMEMODE.ZombieEscape then
 			text = translate.Get("zombie_escape")
 		else
-			local maxwaves = GAMEMODE:GetNumberOfWaves()
-			if maxwaves ~= -1 then
-				text = translate.Format("wave_x_of_y", wave, maxwaves)
-				if not GAMEMODE:GetWaveActive() then
-					text = translate.Get("intermission").." - "..text
-				end
-			elseif not GAMEMODE:GetWaveActive() then
+			if not GAMEMODE:GetWaveActive() then
 				text = translate.Get("intermission")
 			end
 		end
@@ -98,18 +89,6 @@ function PANEL:Text2Paint()
 		end
 
 		draw.SimpleText(translate.Format("zombie_invasion_in_x", util.ToMinutesSeconds(timeleft)), self.Font, 0, 0, col)
-	elseif GAMEMODE:GetWaveActive() then
-		local waveend = GAMEMODE:GetWaveEnd()
-		if waveend ~= -1 then
-			local timeleft = math.max(0, waveend - CurTime())
-			draw.SimpleText(translate.Format("wave_ends_in_x", util.ToMinutesSeconds(timeleft)), self.Font, 0, 0, 10 < timeleft and COLOR_GRAY or Color(255, 0, 0, math.abs(math.sin(RealTime() * 8)) * 180 + 40))
-		end
-	else
-		local wavestart = GAMEMODE:GetWaveStart()
-		if wavestart ~= -1 then
-			local timeleft = math.max(0, wavestart - CurTime())
-			draw.SimpleText(translate.Format("next_wave_in_x", util.ToMinutesSeconds(timeleft)), self.Font, 0, 0, 10 < timeleft and COLOR_GRAY or Color(255, 0, 0, math.abs(math.sin(RealTime() * 8)) * 180 + 40))
-		end
 	end
 
 	return true
@@ -117,16 +96,7 @@ end
 
 function PANEL:Text3Paint()
 	if MySelf:IsValid() then
-		if MySelf:Team() == TEAM_UNDEAD then
-			local toredeem = GAMEMODE:GetRedeemBrains()
-			if toredeem > 0 then
-				draw.SimpleText(translate.Format("brains_eaten_x", MySelf:Frags().." / "..toredeem), self.Font, 0, 0, COLOR_DARKRED)
-			else
-				draw.SimpleText(translate.Format("brains_eaten_x", MySelf:Frags()), self.Font, 0, 0, COLOR_DARKRED)
-			end
-		else
-			draw.SimpleText(translate.Format("points_x", MySelf:GetPoints().." / "..MySelf:Frags()), self.Font, 0, 0, COLOR_DARKRED)
-		end
+		draw.SimpleText(translate.Format("points_x", MySelf:GetPoints().." / "..MySelf:Frags()), self.Font, 0, 0, COLOR_DARKRED)
 	end
 
 	return true
