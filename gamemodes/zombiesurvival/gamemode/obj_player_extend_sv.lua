@@ -872,7 +872,7 @@ AccessorFunc(meta, "Stress", "Stress", FORCE_NUMBER)
 
 function meta:UpdateStress(deltaT)
 	if CurTime() > (self.InhibitDecayDuration or 0) then
-		self:SetStress(math.min(self:GetStress() - (deltaT / GAMEMODE.IntensityDecayTime), 0.0))
+		self:SetStress(math.max(self:GetStress() - (deltaT / GAMEMODE.IntensityDecayTime), 0.0))
 	end
 end
 
@@ -890,7 +890,7 @@ function meta:IncreaseStress(stressType)
 		value = 999
 	end
 
-	self:SetStress(math.max(self:GetStress() + (value * GAMEMODE.IntensityScale), 1.0))
+	self:SetStress(math.min(self:GetStress() + (value * GAMEMODE.IntensityScale), 1.0))
 
 	self:InhibitStressDecay(GAMEMODE.InhibitIntensityDelay)
 end
