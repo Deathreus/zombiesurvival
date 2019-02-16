@@ -56,6 +56,8 @@ hook.Add("InitPostEntityMap", "zombieescape", function(fromze)
 			GAMEMODE:SetWaveStart(CurTime() + GAMEMODE.ZE_FreezeTime + 5)
 		end
 	end
+
+	SetGlobalInt("numwaves", -1)
 end)
 
 hook.Add("PlayerSpawn", "zombieescape", function(pl)
