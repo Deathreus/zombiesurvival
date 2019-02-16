@@ -644,7 +644,7 @@ function GM:HumanHUD(screenscale)
 		if self:GetWave() == 0 and not self:GetWaveActive() then
 			local txth = draw_GetFontHeight("ZSHUDFontSmall")
 			draw_SimpleTextBlurry(translate.Get("waiting_for_players").." "..util.ToMinutesSeconds(math.max(0, self:GetWaveStart() - curtime)), "ZSHUDFontSmall", w * 0.5, h * 0.25, COLOR_GRAY, TEXT_ALIGN_CENTER)
-			draw_SimpleTextBlurry(translate.Get("humans_closest_to_spawns_are_zombies"), "ZSHUDFontSmall", w * 0.5, h * 0.25 + txth, COLOR_GRAY, TEXT_ALIGN_CENTER)
+			--[[draw_SimpleTextBlurry(translate.Get("humans_closest_to_spawns_are_zombies"), "ZSHUDFontSmall", w * 0.5, h * 0.25 + txth, COLOR_GRAY, TEXT_ALIGN_CENTER)
 
 			local desiredzombies = self:GetDesiredStartingZombies()
 
@@ -659,7 +659,7 @@ function GM:HumanHUD(screenscale)
 					draw_SimpleTextBlurry(pl:Name(), "ZSHUDFontTiny", w * 0.5, y, pl == MySelf and COLOR_RED or COLOR_GRAY, TEXT_ALIGN_CENTER)
 					y = y + txth
 				end
-			end
+			end--]]
 		end
 
 		local drown = MySelf.status_drown
@@ -1801,16 +1801,8 @@ local function BossSpawnedPaint()
 	surface_DrawTexturedRectRotated(ScrW() / 2, ScrH() / 2, size, size, delta * 25)
 end
 net.Receive("zs_boss_spawned", function(length)
-	local ent = net.ReadEntity()
-	local classindex = net.ReadUInt(8)
-
-	if ent == MySelf and ent:IsValid() then
-		GAMEMODE:CenterNotify({killicon = "default"}, " ", COLOR_RED, translate.Format("you_are_x", translate.Get(GAMEMODE.ZombieClasses[classindex].TranslationName)), {killicon = "default"})
-	elseif ent:IsValid() then
-		GAMEMODE:CenterNotify({killicon = "default"}, " ", COLOR_RED, (translate.Format("x_has_risen_as_y", ent:Name(), translate.Get(GAMEMODE.ZombieClasses[classindex].TranslationName))), {killicon = "default"})
-	else
-		GAMEMODE:CenterNotify({killicon = "default"}, " ", COLOR_RED, translate.Format("x_has_risen", translate.Get(GAMEMODE.ZombieClasses[classindex].TranslationName)), {killicon = "default"})
-	end
+	local name = net.ReadString()
+	GAMEMODE:CenterNotify({killicon = "default"}, " ", COLOR_RED, translate.Format("x_has_risen", name), {killicon = "default"})
 
 	if MySelf:IsValid() then
 		MySelf:EmitSound("npc/zombie_poison/pz_alert1.wav", 0)
