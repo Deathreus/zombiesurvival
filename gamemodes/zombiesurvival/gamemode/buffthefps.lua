@@ -91,17 +91,17 @@ local function draw_DrawText(text, font, x, y, colour, xalign )
 	local curX = x
 	local curY = y
 	local curString = ""
-	
+
 	surface_SetFont(font)
 	local lineHeight = draw_GetFontHeight(font)
-	
-	for i=1, #text do
+
+	for i = 1, #text do
 		local ch = string_sub(text, i, i)
 		if ch == "\n" then
 			if #curString > 0 then
 				draw_SimpleText(curString, font, curX, curY, colour, xalign)
 			end
-			
+
 			curY = curY + lineHeight / 2
 			curX = x
 			curString = ""
@@ -109,13 +109,13 @@ local function draw_DrawText(text, font, x, y, colour, xalign )
 			if #curString > 0 then
 				draw_SimpleText(curString, font, curX, curY, colour, xalign)
 			end
-			local tmpSizeX,tmpSizeY =  surface_GetTextSize(curString)
+			local tmpSizeX, tmpSizeY =  surface_GetTextSize(curString)
 			curX = math_ceil( (curX + tmpSizeX) / 50 ) * 50
 			curString = ""
 		else
 			curString = curString .. ch
 		end
-	end	
+	end
 	if #curString > 0 then
 		draw_SimpleText(curString, font, curX, curY, colour, xalign)
 	end
@@ -129,10 +129,10 @@ local function draw_RoundedBox(bordersize, x, y, w, h, color)
 	surface_DrawRect(x + w - bordersize, y + bordersize, bordersize, h - bordersize * 2)
 
 	surface_SetTexture(bordersize > 8 and Tex_Corner16 or Tex_Corner8)
-	surface_DrawTexturedRectRotated( x + bordersize/2 , y + bordersize/2, bordersize, bordersize, 0 ) 
-	surface_DrawTexturedRectRotated( x + w - bordersize/2 , y + bordersize/2, bordersize, bordersize, 270 ) 
-	surface_DrawTexturedRectRotated( x + bordersize/2 , y + h -bordersize/2, bordersize, bordersize, 90 )
- 	surface_DrawTexturedRectRotated( x + w - bordersize/2 , y + h - bordersize/2, bordersize, bordersize, 180 )
+	surface_DrawTexturedRectRotated(x + bordersize/2 , y + bordersize/2, bordersize, bordersize, 0)
+	surface_DrawTexturedRectRotated(x + w - bordersize/2 , y + bordersize/2, bordersize, bordersize, 270)
+	surface_DrawTexturedRectRotated(x + bordersize/2 , y + h -bordersize/2, bordersize, bordersize, 90)
+	surface_DrawTexturedRectRotated(x + w - bordersize/2 , y + h - bordersize/2, bordersize, bordersize, 180)
 end
 
 local function draw_Text(tab)
@@ -172,7 +172,7 @@ end
 function draw.WordBox( bordersize, x, y, text, font, color, fontcolor )
 	surface_SetFont( font )
 	local w, h = surface_GetTextSize( text )
-	
+
 	draw_RoundedBox( bordersize, x, y, w+bordersize*2, h+bordersize*2, color )
 
 	surface_SetTextColor( fontcolor.r, fontcolor.g, fontcolor.b, fontcolor.a )
@@ -190,10 +190,10 @@ function draw.TextShadow( tab, distance, alpha )
 	tab.pos = { pos[1] + distance, pos[2] + distance }
 
 	draw_Text( tab )
-	
+
 	tab.color = color
 	tab.pos = pos
-	
+
 	draw_Text( tab )
 end
 
@@ -209,7 +209,7 @@ end
 
 function draw.RoundedBoxEx( bordersize, x, y, w, h, color, a, b, c, d )
 	surface_SetDrawColor(color)
-	
+
 	-- Draw as much of the rect as we can without textures
 	surface_DrawRect(x + bordersize, y, w - bordersize * 2, h)
 	surface_DrawRect(x, y + bordersize, bordersize, h - bordersize * 2)
@@ -222,19 +222,19 @@ function draw.RoundedBoxEx( bordersize, x, y, w, h, color, a, b, c, d )
 	else
 		surface_DrawRect( x, y, bordersize, bordersize )
 	end
-	
+
 	if b then
 		surface_DrawTexturedRectRotated( x + w - bordersize/2 , y + bordersize/2, bordersize, bordersize, 270 ) 
 	else
 		surface_DrawRect( x + w - bordersize, y, bordersize, bordersize )
 	end
- 
+
 	if c then
 		surface_DrawTexturedRectRotated( x + bordersize/2 , y + h -bordersize/2, bordersize, bordersize, 90 )
 	else
 		surface_DrawRect( x, y + h - bordersize, bordersize, bordersize )
 	end
- 
+
 	if d then
 		surface_DrawTexturedRectRotated( x + w - bordersize/2 , y + h - bordersize/2, bordersize, bordersize, 180 )
 	else
@@ -243,15 +243,15 @@ function draw.RoundedBoxEx( bordersize, x, y, w, h, color, a, b, c, d )
 end
 
 function draw.SimpleTextOutlined(text, font, x, y, colour, xalign, yalign, outlinewidth, outlinecolour)
-	local steps = (outlinewidth*2) / 3
+	local steps = (outlinewidth * 2) / 3
 	if steps < 1 then steps = 1 end
-	
-	for _x=-outlinewidth, outlinewidth, steps do
-		for _y=-outlinewidth, outlinewidth, steps do
+
+	for _x = -outlinewidth, outlinewidth, steps do
+		for _y = -outlinewidth, outlinewidth, steps do
 			draw_SimpleText(text, font, x + _x, y + _y, outlinecolour, xalign, yalign)
 		end
 	end
-	
+
 	draw_SimpleText(text, font, x, y, colour, xalign, yalign)
 end
 

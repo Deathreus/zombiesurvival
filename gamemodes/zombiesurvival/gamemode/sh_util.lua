@@ -116,9 +116,9 @@ function string.AndSeparate(list)
 	local length = #list
 	if length <= 0 then return "" end
 	if length == 1 then return list[1] end
-	if length == 2 then return list[1].." and "..list[2] end
+	if length == 2 then return list[1] .. " and " .. list[2] end
 
-	return table.concat(list, ", ", 1, length - 1)..", and "..list[length]
+	return table.concat(list, ", ", 1, length - 1) .. ", and " .. list[length]
 end
 
 function util.SkewedDistance(a, b, skew)
@@ -140,7 +140,6 @@ end
 
 -- I had to make this since the default function checks visibility vs. the entitiy's center and not the nearest position.
 function util.BlastDamageEx(inflictor, attacker, epicenter, radius, damage, damagetype)
-	local filter = inflictor
 	for _, ent in pairs(ents.FindInSphere(epicenter, radius)) do
 		if ent and ent:IsValid() then
 			local nearest = ent:NearestPoint(epicenter)
@@ -157,7 +156,7 @@ end
 
 function util.FindValidInSphere(pos, radius)
 	local ret = {}
-	
+
 	for _, ent in pairs(util.FindInSphere(pos, radius)) do
 		if ent and ent:IsValid() then
 			ret[#ret + 1] = ent
@@ -168,7 +167,6 @@ function util.FindValidInSphere(pos, radius)
 end
 
 function util.PoisonBlastDamage(inflictor, attacker, epicenter, radius, damage, noreduce)
-	local filter = inflictor
 	for _, ent in pairs(ents.FindInSphere(epicenter, radius)) do
 		if ent and ent:IsValid() then
 			local nearest = ent:NearestPoint(epicenter)
@@ -183,7 +181,7 @@ function util.ToMinutesSeconds(seconds)
 	local minutes = math.floor(seconds / 60)
 	seconds = seconds - minutes * 60
 
-    return string.format("%02d:%02d", minutes, math.floor(seconds))
+	return string.format("%02d:%02d", minutes, math.floor(seconds))
 end
 
 function util.ToMinutesSecondsMilliseconds(seconds)
@@ -192,7 +190,7 @@ function util.ToMinutesSecondsMilliseconds(seconds)
 
 	local milliseconds = math.floor(seconds % 1 * 100)
 
-    return string.format("%02d:%02d.%02d", minutes, math.floor(seconds), milliseconds)
+	return string.format("%02d:%02d.%02d", minutes, math.floor(seconds), milliseconds)
 end
 
 function util.RemoveAll(class)
@@ -228,14 +226,14 @@ end
 
 function AccessorFuncDT(tab, membername, type, id)
 	local emeta = FindMetaTable("Entity")
-	local setter = emeta["SetDT"..type]
-	local getter = emeta["GetDT"..type]
+	local setter = emeta["SetDT" .. type]
+	local getter = emeta["GetDT" .. type]
 
-	tab["Set"..membername] = function(me, val)
+	tab["Set" .. membername] = function(me, val)
 		setter(me, id, val)
 	end
 
-	tab["Get"..membername] = function(me)
+	tab["Get" .. membername] = function(me)
 		return getter(me, id)
 	end
 end

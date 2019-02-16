@@ -18,7 +18,7 @@ function GM:DrawTargetID(ent, fade)
 	if healthfraction ~= 1 then
 		util.ColorCopy(0.75 <= healthfraction and COLOR_HEALTHY or 0.5 <= healthfraction and COLOR_SCRATCHED or 0.25 <= healthfraction and COLOR_HURT or COLOR_CRITICAL, colTemp)
 
-		local healthdisplay = math.ceil(healthfraction * 100).."%"
+		local healthdisplay = math.ceil(healthfraction * 100) .. "%"
 		draw.SimpleTextBlur(healthdisplay, "ZSHUDFont", x, y, colTemp, TEXT_ALIGN_CENTER)
 		y = y + draw.GetFontHeight("ZSHUDFont") + 4
 	end
@@ -36,7 +36,7 @@ function GM:DrawTargetID(ent, fade)
 		if holding:IsValid() then
 			local mdl = holding:GetModel()
 			local name = string.match(mdl, ".*/(.+)%.mdl") or "object"
-			draw.SimpleTextBlur("Carrying ["..name.."]", "ZSHUDFontTiny", x, y, colTemp, TEXT_ALIGN_CENTER)
+			draw.SimpleTextBlur("Carrying [" .. name .. "]", "ZSHUDFontTiny", x, y, colTemp, TEXT_ALIGN_CENTER)
 		else
 			local wep = ent:GetActiveWeapon()
 			if wep:IsValid() then
