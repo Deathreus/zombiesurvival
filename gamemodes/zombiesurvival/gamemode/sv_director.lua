@@ -260,6 +260,7 @@ function DIRECTOR:SpawnZombie(class, pos)
 		if IsValid(zombie) then
 			zombie:SetPos(pos)
 			zombie:SetAngles(Vector(0, math.Rand(-1, 1), 0):Angle())
+			zombie:SetClassTable(class)
 			zombie:Spawn()
 			zombie:SetHealth(class.Health)
 			zombie:SetMaxHealth(zombie:Health())
@@ -522,10 +523,10 @@ function DIRECTOR:UpdateSpawning()
 	end
 
 	if self.HordeEnabled then
-		TheDirector:UpdateHorde()
+		self:UpdateHorde()
 	end
 	if self.BossesEnabled then
-		TheDirector:UpdateBosses()
+		self:UpdateBosses()
 	end
 
 	if self.IsFinale then self.Spawning = true end
